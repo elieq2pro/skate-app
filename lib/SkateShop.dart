@@ -26,7 +26,7 @@ class _SkateShopState extends State<SkateShop> {
               title: "ELIE ZER",
               imagePath: board.imagePath,
               price: "\$250",
-              backgroundColor: board.colors.color,
+              colors: board.colors,
             ),
         ],
       ),
@@ -71,19 +71,18 @@ class SkateItemWidget extends StatelessWidget {
   final String title;
   final String imagePath;
   final String price;
-  final Color backgroundColor;
+  final PaletteColor colors;
 
-  const SkateItemWidget({Key key, this.title, this.imagePath, this.price, this.backgroundColor}) : super(key: key);
+  const SkateItemWidget({Key key, this.title, this.imagePath, this.price, this.colors}) : super(key: key);
 
 
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
     return Container(
-      color: backgroundColor,
+      color: colors.color,
       height: 200,
       child: Padding(
-        padding: const EdgeInsets.all(32.0),
+        padding: const EdgeInsets.all(30.0),
         child: Stack(
           children: <Widget>[
             Positioned(
@@ -93,7 +92,7 @@ class SkateItemWidget extends StatelessWidget {
                 child: Text(title,
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: Colors.white,
+                    color: colors.titleTextColor,
                     letterSpacing: 10,
                     fontWeight: FontWeight.w700,
                   ),
@@ -106,7 +105,7 @@ class SkateItemWidget extends StatelessWidget {
                 child: Text(price,
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: Colors.white,
+                    color: colors.titleTextColor,
                     letterSpacing: 10,
                     fontWeight: FontWeight.w700,
                   ),
@@ -115,8 +114,18 @@ class SkateItemWidget extends StatelessWidget {
             RotatedBox(
                 quarterTurns: 3,
                 child: Center(
-                    child: Image.asset(imagePath)
-                )
+                    child: Container(
+                      decoration: BoxDecoration(
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black,
+                            blurRadius: 40,
+                          )
+                        ]
+                      ),
+                        child: Image.asset(imagePath)
+                    ),
+                ),
             ),
           ],
         ),
