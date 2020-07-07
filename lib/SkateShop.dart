@@ -13,6 +13,9 @@ class _SkateShopState extends State<SkateShop> with SingleTickerProviderStateMix
   AnimationController _animationController;
 
   double rotation = 0;
+  double scrollStartAt = 0;
+
+  Color backgroundColor = Colors.white;
 
   @override
   Widget build(BuildContext context) {
@@ -24,10 +27,14 @@ class _SkateShopState extends State<SkateShop> with SingleTickerProviderStateMix
       );
     }
     return Scaffold(
+      backgroundColor: backgroundColor,
       body: NotificationListener(
         onNotification: (notification) {
           if (notification is ScrollEndNotification) {
-            _animationController.reverse(from: rotation);
+            _animationController.reverse(from: rotation.abs());
+          }
+          if (notification is ScrollStartNotification) {
+            scrollStartAt = _scrollController.offset;
           }
           return false;
         },
@@ -54,12 +61,20 @@ class _SkateShopState extends State<SkateShop> with SingleTickerProviderStateMix
 
     _scrollController = ScrollController();
     _scrollController.addListener(() {
-      var dx = _scrollController.offset;
+      var dx = _scrollController.offset - scrollStartAt;
 
       setState(() {
         rotation = dx / 50;
         if (rotation > 1) {
           rotation = 1;
+        } else if (rotation < -1) {
+          rotation = -1;
+        }
+
+        if ( _scrollController.offset > 50 ) {
+          backgroundColor = data.last.colors.color;
+        } else {
+          backgroundColor = data.first.colors.color;
         }
       });
     });
@@ -70,12 +85,14 @@ class _SkateShopState extends State<SkateShop> with SingleTickerProviderStateMix
     );
     _animationController.addListener(() {
       setState(() {
-        rotation = _animationController.value;
+        rotation = rotation.sign * _animationController.value;
       });
     });
     _initializeColors().then((list) {
       setState(() {
         data = list;
+
+        backgroundColor = data.first.colors.color;
       });
     });
   }
