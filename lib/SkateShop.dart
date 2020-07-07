@@ -6,8 +6,13 @@ class SkateShop extends StatefulWidget {
   _SkateShopState createState() =>  _SkateShopState();
 }
 
-class _SkateShopState extends State<SkateShop> {
+class _SkateShopState extends State<SkateShop> with SingleTickerProviderStateMixin{
   List<SkateBoard> data = null;
+
+  ScrollController _scrollController;
+  AnimationController _animationController;
+
+  double rotation = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -19,16 +24,26 @@ class _SkateShopState extends State<SkateShop> {
       );
     }
     return Scaffold(
-      body: ListView(
-        children: <Widget>[
-          for(SkateBoard board in data)
-            SkateItemWidget(
-              title: "ELIE ZER",
-              imagePath: board.imagePath,
-              price: "\$250",
-              colors: board.colors,
-            ),
-        ],
+      body: NotificationListener(
+        onNotification: (notification) {
+          if (notification is ScrollEndNotification) {
+            _animationController.reverse(from: rotation);
+          }
+          return false;
+        },
+        child: ListView(
+          controller: _scrollController,
+          children: <Widget>[
+            for (SkateBoard board in data)
+              SkateItemWidget(
+                rotation : rotation,
+                title: "ELIE ZER",
+                imagePath: board.imagePath,
+                price: "\$250",
+                colors: board.colors,
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -37,11 +52,39 @@ class _SkateShopState extends State<SkateShop> {
   void initState() {
     super.initState();
 
+    _scrollController = ScrollController();
+    _scrollController.addListener(() {
+      var dx = _scrollController.offset;
+
+      setState(() {
+        rotation = dx / 50;
+        if (rotation > 1) {
+          rotation = 1;
+        }
+      });
+    });
+
+    _animationController = AnimationController(
+        vsync: this,
+      duration: Duration(milliseconds: 300),
+    );
+    _animationController.addListener(() {
+      setState(() {
+        rotation = _animationController.value;
+      });
+    });
     _initializeColors().then((list) {
       setState(() {
         data = list;
       });
     });
+  }
+
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   Future _initializeColors() async {
@@ -72,12 +115,14 @@ class SkateItemWidget extends StatelessWidget {
   final String imagePath;
   final String price;
   final PaletteColor colors;
+  final double rotation;
 
-  const SkateItemWidget({Key key, this.title, this.imagePath, this.price, this.colors}) : super(key: key);
+  const SkateItemWidget({Key key, this.title, this.imagePath, this.price, this.colors, this.rotation}) : super(key: key);
 
 
   @override
   Widget build(BuildContext context) {
+    print(rotation);
     return Container(
       color: colors.color,
       height: 200,
@@ -113,18 +158,23 @@ class SkateItemWidget extends StatelessWidget {
             ),
             RotatedBox(
                 quarterTurns: 3,
-                child: Center(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black,
-                            blurRadius: 40,
-                          )
-                        ]
+                child: Transform(
+                  transform: Matrix4.rotationY(rotation),
+                  alignment: FractionalOffset.center,
+                  child: Center(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black,
+                              blurRadius: 40,
+                              offset: Offset(50 * rotation, 0),
+                            )
+                          ]
+                        ),
+                          child: Image.asset(imagePath)
                       ),
-                        child: Image.asset(imagePath)
-                    ),
+                  ),
                 ),
             ),
           ],
