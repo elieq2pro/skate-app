@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:palette_generator/palette_generator.dart';
 
 class SkateShop extends StatefulWidget {
   @override
@@ -6,52 +7,65 @@ class SkateShop extends StatefulWidget {
 }
 
 class _SkateShopState extends State<SkateShop> {
+  List<SkateBoard> data = null;
+
   @override
   Widget build(BuildContext context) {
+    if (data == null) {
+      return Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
     return Scaffold(
       body: ListView(
         children: <Widget>[
-          SkateItemWidget(
-            title: "ELIE ZER",
-            imagePath: "assets/tabla1.png",
-            price: "\$ 250",
-            backgroundColor: Colors.blueAccent,
-          ),
-          SkateItemWidget(
-            title: "ELIE ZER",
-            imagePath: "assets/tabla2.png",
-            price: "\$ 250",
-            backgroundColor: Colors.redAccent,
-          ),
-          SkateItemWidget(
-            title: "ELIE ZER",
-            imagePath: "assets/tabla3.png",
-            price: "\$ 250",
-            backgroundColor: Colors.yellowAccent,
-          ),
-          SkateItemWidget(
-            title: "ELIE ZER",
-            imagePath: "assets/tabla4.png",
-            price: "\$250",
-            backgroundColor: Colors.greenAccent,
-          ),
-          SkateItemWidget(
-            title: "ELIE ZER",
-            imagePath: "assets/tabla5.png",
-            price: "\$ 250",
-            backgroundColor: Colors.purpleAccent,
-          ),
-          SkateItemWidget(
-            title: "ELIE ZER",
-            imagePath: "assets/tabla6.png",
-            price: "\$ 250",
-            backgroundColor: Colors.orange,
-          ),
+          for(SkateBoard board in data)
+            SkateItemWidget(
+              title: "ELIE ZER",
+              imagePath: board.imagePath,
+              price: "\$250",
+              backgroundColor: board.colors.color,
+            ),
         ],
       ),
     );
   }
+
+  @override
+  void initState() {
+    super.initState();
+
+    _initializeColors().then((list) {
+      setState(() {
+        data = list;
+      });
+    });
+  }
+
+  Future _initializeColors() async {
+    var images = ["tabla1.png", "tabla2.png", "tabla3.png", "tabla4.png", "tabla5.png", "tabla6.png"];
+
+    List<SkateBoard> list = [];
+
+    for(String image in images) {
+      String imagePath = "assets/$image";
+      PaletteGenerator colors = await PaletteGenerator.fromImageProvider(AssetImage(imagePath));
+      list.add(SkateBoard(imagePath, colors.dominantColor));
+    }
+
+    return list;
+  }
 }
+
+class SkateBoard {
+  final String imagePath;
+  final PaletteColor colors;
+
+  SkateBoard(this.imagePath, this.colors);
+}
+
 
 class SkateItemWidget extends StatelessWidget {
   final String title;
@@ -67,7 +81,7 @@ class SkateItemWidget extends StatelessWidget {
     // TODO: implement build
     return Container(
       color: backgroundColor,
-      height: 250,
+      height: 200,
       child: Padding(
         padding: const EdgeInsets.all(32.0),
         child: Stack(
@@ -78,6 +92,11 @@ class SkateItemWidget extends StatelessWidget {
                 top: 0,
                 child: Text(title,
                   textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white,
+                    letterSpacing: 10,
+                    fontWeight: FontWeight.w700,
+                  ),
                 )
             ),
             Positioned(
@@ -86,6 +105,11 @@ class SkateItemWidget extends StatelessWidget {
                 bottom: 0,
                 child: Text(price,
                   textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white,
+                    letterSpacing: 10,
+                    fontWeight: FontWeight.w700,
+                  ),
                 )
             ),
             RotatedBox(
